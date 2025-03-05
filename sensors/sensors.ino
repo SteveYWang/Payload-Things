@@ -8,7 +8,7 @@
 //#include "SparkFun_BNO080_Arduino_Library.h"
 #include <Adafruit_ICM20948.h>
 // NOTE: must be patched so serial is enabled for ESP32 (substitute for ESP8266 in .h and .cpp)
-/include <Adafruit_GPS.h>
+#include <Adafruit_GPS.h>
 
 
 #include "pins.h"
@@ -31,7 +31,7 @@ SPIClass spi(FSPI);
 
 // Sensor variables
 Adafruit_LPS22 alt;
-Adafruit_GPS gps(&Serial1);
+Adafruit_GPS gps(&Wire);
 Adafruit_ICM20948 imu;
 
 void setup_sensors() {
@@ -58,7 +58,7 @@ void setup_altimeter() {
   spiLock(portMAX_DELAY);
   altimeter_data.connected = false;
   Serial.println("Setting up altimeter...");
-  if (!alt.begin_SPI(PIN_ALT_CS, &spi)) {
+  if (!alt.begin_I2C()) {
     Serial.println("WARN: Failed to find LPS22 chip");
     spiUnlock();
     return;
@@ -83,15 +83,15 @@ void setup_altimeter() {
 
 void setup_gps() {
   Serial.println("Setting up GPS....");
-  Serial1.begin(9600, SERIAL_8N1, PIN_GPS_TX, PIN_GPS_RX);
-  gps.begin(9600);
+  //Serial1.begin(9600, SERIAL_8N1, PIN_GPS_TX, PIN_GPS_RX);
+  gps.begin(0x10);
   // gps.sendCommand(PMTK_SET_NMEA_OUTPUT_GGAONLY); // only actual GPS data
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   // gps.sendCommand(PGCMD_ANTENNA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
   delay(500);
   // Ask for firmware version
-  Serial1.println(PMTK_Q_RELEASE);
+  //Serial1.println(PMTK_Q_RELEASE);
   Serial.println("GPS Setup done!");
 }
 
@@ -103,7 +103,6 @@ void main_sensors() {
 }
 #endif
 
-//NOTE: need to change locks to one for I2C (maybe, idk, should look into it)
 void main_imu() {
   if (!spiLock(SENSOR_MAX_MUTEX_DELAY)) {
     log("ERROR: failed to obtain SPI mutex (IMU)");
