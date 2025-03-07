@@ -51,8 +51,8 @@ void setup_imu() {
   imu.begin_I2C();
   imu.setAccelRange(ICM20948_ACCEL_RANGE_16_G); //figure out what value should be
   imu.setGyroRange(ICM20948_GYRO_RANGE_2000_DPS); //figure out what value should be
-  icm.setAccelRateDivisor(87); //12.5 Hz
-  icm.setGyroRateDivisor(87); //12.5 Hz
+  imu.setAccelRateDivisor(87); //12.5 Hz
+  imu.setGyroRateDivisor(87); //12.5 Hz
   // spiUnlock();
 }
 
@@ -117,7 +117,7 @@ void main_imu() {
       uint8_t accuracy; // discarded
       sensors_event_t accel;
       sensors_event_t gyro;
-      imu.getEvent(&accel, &gyro, &temp, &mag);
+      imu.getEvent(&accel, &gyro);
       xSemaphoreGive(sensor_data_mutex);
     } else {
       log("ERROR: failed to obtain mutex for IMU data");
